@@ -5,15 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Edital;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class EditalController extends Controller
 {
     /**
-     * Lista editais para a WEB (Blade) com Filtros Combinados de Público e Órgão
-     * GET /editais
+     * Lista editais com Filtros Combinados de Público e Órgão
+     * GET /api/editais
      */
-    public function index(Request $request): View
+    public function index(Request $request): JsonResponse
     {
         $query = Edital::query();
 
@@ -47,34 +46,24 @@ class EditalController extends Controller
         // 4. Paginação de 12 em 12 ordenada pelos mais recentes
         $editais = $query->latest('data_publicacao')->paginate(12)->withQueryString();
 
-        return view('editais.index', compact('editais'));
-    }
-    /**
-     * MANTIDO: Lista editais para a API (React Native)
-     * GET /api/editais
-     */
-    public function apiIndex(): JsonResponse
-    {
-        // Aqui também é bom usar paginação no futuro pro app não travar
-        $editais = Edital::latest()->get();
-
         return response()->json([
             'success' => true,
-            'total' => $editais->count(),
             'data' => $editais,
         ]);
     }
 
     /**
      * Exibe os detalhes de um edital específico
-     * GET /editais/{id}
+     * GET /api/editais/{id}
      */
-    public function show($id): View
+    public function show($id): JsonResponse
     {
-        // Busca o edital ou estoura um erro 404 caso o ID não exista
         $edital = Edital::findOrFail($id);
 
-        return view('editais.show', compact('edital'));
+        return response()->json([
+            'success' => true,
+            'data' => $edital,
+        ]);
     }
 
 }

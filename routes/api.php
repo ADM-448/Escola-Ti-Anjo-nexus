@@ -9,6 +9,5 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/editais', [EditalController::class, 'apiIndex']);
-
-Route::apiResource('editais', EditalController::class);
+Route::get('/editais', [EditalController::class, 'index']);
+Route::get('/editais/{id}', [EditalController::class, 'show']);

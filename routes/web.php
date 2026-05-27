@@ -1,13 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\EditalController;
-
-Route::get('/editais', [EditalController::class, 'index'])->name('editais.index');
-
-Route::get('/editais/{id}', [EditalController::class, 'show'])->name('editais.show');
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/editais');
 });
 
+Route::get('/editais', function () {
+    return response()->file(resource_path('views/editais/index.html'));
+});
+
+Route::get('/editais/show', function () {
+    return response()->file(resource_path('views/editais/show.html'));
+});
