@@ -18,7 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'auth.token'   => \App\Http\Middleware\VerificarToken::class,
-            'auth.sessao'  => \App\Http\Middleware\VerificarSessao::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -184,14 +184,4 @@ Remove um jogo.
 | PUT | `/api/jogos/{id}` | Atualizar jogo | 200 / 404 / 422 |
 | DELETE | `/api/jogos/{id}` | Remover jogo | 204 / 404 |
 
----
 
-## 🌐 Interface Web
-
-| Rota | Descrição |
-|------|-----------|
-| `/login` | Tela de login |
-| `/jogos` | Lista de jogos (interface) |
-| `/jogos/create` | Formulário novo jogo |
-| `/jogos/{id}` | Detalhes do jogo |
-| `/jogos/{id}/edit` | Editar jogo |
