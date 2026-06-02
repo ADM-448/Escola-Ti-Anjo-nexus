@@ -118,7 +118,7 @@
             return 'bg-blue-50 text-blue-700';
         }
 
-        async function fetchEditais(url = '/api/editais') {
+        async function fetchEditais(url = 'http://127.0.0.1:8000/api/editais') {
             grid.innerHTML = '';
             paginationContainer.innerHTML = '';
             loading.classList.remove('hidden');
@@ -222,7 +222,7 @@
                 }
             }
             
-            fetchEditais(`/api/editais?${params.toString()}`);
+            fetchEditais(`http://127.0.0.1:8000/api/editais?${params.toString()}`);
         });
 
         // Parse initial URL params to check checkboxes
@@ -244,7 +244,7 @@
             });
 
             // Make initial fetch with params if any
-            fetchEditais(`/api/editais?${params.toString()}`);
+            fetchEditais(`http://127.0.0.1:8000/api/editais?${params.toString()}`);
         });
 
     </script>
