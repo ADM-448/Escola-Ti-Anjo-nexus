@@ -92,7 +92,9 @@ php artisan roach:run FinepSpider
 
 > ⚙️ **Nota de Performance:** Devido à eficiência da arquitetura de buffer do cofre em JavaScript e à redução do delay adaptativo para 1.2s, a extração total das dezenas de páginas do portal da FINEP passou de um tempo estimado de **30 minutos** para uma execução sólida de aproximadamente **1 a 2 minutos**, de forma totalmente idempotente.
 
+---
 
+## 📚 Documentação Complementar do Projeto
 
-
-<!-- rapar depois documentações exigidas, verificar se ICT é exigido, valor min e max, datas de abertura de inscrições e fechamento do edital, quem pode participar, até que dia pode submeter proposta -->
+- 📑 **[REQUISITOS_CONSOLIDADOS_RADAR_EDITAIS.md](REQUISITOS_CONSOLIDADOS_RADAR_EDITAIS.md):** Especificação completa e linear de todos os 46 Requisitos Funcionais (RF-01 a RF-46) e 13 Requisitos Não-Funcionais (RNF-01 a RNF-13), organizados por nível de dificuldade técnica.
+- 🛡️ **[PLANO_DINAMICA_EQUIPE_E_DEFESA_BANCA.md](PLANO_DINAMICA_EQUIPE_E_DEFESA_BANCA.md):** Metodologia de trabalho em equipe (Fullstack por Módulo + Golden Template), divisão de tarefas por integrante e roteiro de capacitação técnica para a defesa individual na banca examinadora (UniCesumar).
