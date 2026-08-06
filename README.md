@@ -98,3 +98,4 @@ php artisan roach:run FinepSpider
 
 - 📑 **[REQUISITOS_CONSOLIDADOS_RADAR_EDITAIS.md](REQUISITOS_CONSOLIDADOS_RADAR_EDITAIS.md):** Especificação completa e linear de todos os 46 Requisitos Funcionais (RF-01 a RF-46) e 13 Requisitos Não-Funcionais (RNF-01 a RNF-13), organizados por nível de dificuldade técnica.
 - 🛡️ **[PLANO_DINAMICA_EQUIPE_E_DEFESA_BANCA.md](PLANO_DINAMICA_EQUIPE_E_DEFESA_BANCA.md):** Metodologia de trabalho em equipe (Fullstack por Módulo + Golden Template), divisão de tarefas por integrante e roteiro de capacitação técnica para a defesa individual na banca examinadora (UniCesumar).
+- 🏛️ **[ARTEFATOS_E_DECISOES_ARQUITETURAIS.md](ARTEFATOS_E_DECISOES_ARQUITETURAIS.md):** Registros de Decisões Arquiteturais (ADRs 01 a 04), especificação dos contratos de API REST Stateless, Diagramas de Arquitetura C4 / Sequência em Mermaid.js, DER do banco de dados e o Código Molde ("Golden Template").

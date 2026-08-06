@@ -35,51 +35,54 @@ Este documento organiza **todos os Requisitos Funcionais (RF-01 a RF-46)** e **R
 ## 🟢 Nível 1: Fundação & Base da Aplicação (Dificuldade Baixa)
 
 ### Módulo 1: Autenticação, Gestão de Perfil e LGPD
-* **RF-01 (Cadastro de Usuário):** O sistema deve permitir o cadastro de usuários coletando nome, e-mail e senha.
-* **RF-02 (Autenticação / Login):** O sistema deve permitir que o usuário realize o login na plataforma utilizando e-mail e senha.
-* **RF-03 (Recuperação de Acesso):** O sistema deve permitir a recuperação de senha através do envio de um token/link seguro por e-mail.
-* **RF-04 (Perfil da Startup / Empresa):** O sistema deve permitir que a Startup ou empresa preencha e atualize seu perfil completo com CNPJ, Porte, Área de Atuação, Faturamento, Nível de TRL e Pitch institucional.
-* **RF-05 (Múltiplas Áreas de Interesse):** O usuário/empresa deve poder selecionar e editar múltiplas áreas de interesse tecnológico em seu perfil.
-* **RF-06 (Barra de Progresso do Perfil):** O sistema deve exibir uma barra de progresso no painel indicando o percentual de completude dos dados obrigatórios.
-* **RF-07 (Conformidade LGPD e Exclusão):** O sistema deve excluir dados pessoais ou anonimizá-los totalmente em caso de solicitação de exclusão da conta pelo usuário.
+🟢* **RF-01 (Cadastro de Usuário):** O sistema deve permitir o cadastro de usuários coletando nome, e-mail e senha.
+🟢* **RF-02 (Autenticação / Login):** O sistema deve permitir que o usuário realize o login na plataforma utilizando e-mail e senha.
+🟢* **RF-03 (Recuperação de Acesso):** O sistema deve permitir a recuperação de senha através do envio de um token/link seguro por e-mail.
+🟢* **RF-04 (Perfil da Startup / Empresa):** O sistema deve permitir que a Startup ou empresa preencha e atualize seu perfil completo com CNPJ, Porte, Área de Atuação, Faturamento, Nível de TRL e Pitch institucional.
+🟢* **RF-05 (Múltiplas Áreas de Interesse):** O usuário/empresa deve poder selecionar e editar múltiplas áreas de interesse tecnológico em seu perfil.
+* 🟢**RF-06 (Barra de Progresso do Perfil):** O sistema deve exibir uma barra de progresso no painel indicando o percentual de completude dos dados obrigatórios.
+* 🟢**RF-07 (Conformidade LGPD e Exclusão):** O sistema deve excluir dados pessoais ou anonimizá-los totalmente em caso de solicitação de exclusão da conta pelo usuário.
 
 ### Módulo 2: Busca, Filtros Combinados e Acompanhamento de Editais
-* **RF-08 (Filtros Avançados de Pesquisa):** O sistema deve permitir a filtragem combinada de editais por região, órgão emissor (`fonte[]`), status e valores.
-* **RF-09 (Filtro de Orçamentos Explícitos):** O sistema deve disponibilizar um filtro exclusivo para selecionar apenas editais com valores/orçamentos explicitamente informados.
-* **RF-10 (Busca Textual Por Palavra-Chave):** O sistema deve permitir a busca textual por palavra-chave filtrando em tempo real nos campos de `titulo` ou `objetivo`.
-* **RF-11 (Favoritar / Salvar Editais):** O sistema deve possuir a funcionalidade de "Favoritar" e salvar editais em uma lista pessoal de acompanhamento.
+* 🟢**RF-08 (Filtros Avançados de Pesquisa):** O sistema deve permitir a filtragem combinada de editais por região, órgão emissor (`fonte[]`), status e valores.
+* 🟢**RF-09 (Filtro de Orçamentos Explícitos):** O sistema deve disponibilizar um filtro exclusivo para selecionar apenas editais com valores/orçamentos explicitamente informados.
+* 🟢**RF-10 (Busca Textual Por Palavra-Chave):** O sistema deve permitir a busca textual por palavra-chave filtrando em tempo real nos campos de `titulo` ou `objetivo`.
+* 🟢**RF-11 (Favoritar / Salvar Editais):** O sistema deve possuir a funcionalidade de "Favoritar" e salvar editais em uma lista pessoal de acompanhamento.
 
 ### Módulo 3: Painel Administrativo Global
-* **RF-12 (Dashboard de Métricas Globais):** O sistema deve fornecer um Painel Administrativo para os gestores da plataforma com métricas de usuários ativos, editais coletados e volume de propostas geradas.
-* **RF-13 (Gestão Manual de Créditos):** O sistema deve permitir ao administrador conceder, ajustar ou revogar o saldo de créditos virtuais de usuários manualmente.
+*🟢 **RF-12 (Dashboard de Métricas Globais):** O sistema deve fornecer um Painel Administrativo para os gestores da plataforma com métricas de usuários ativos, editais coletados e volume de propostas geradas. No caso do consultor tbm tera o panorama das empresas q ele estao atendendo
+*🔴 **RF-13 (Gestão Manual de Créditos):** O sistema deve permitir ao administrador conceder, ajustar ou revogar o saldo de créditos virtuais de usuários manualmente.
 
 ---
 
 ## 🟡 Nível 2: Coleta de Dados & Monetização B2B (Dificuldade Média)
 
 ### Módulo 4: Motor de Mineração, Scraping e Indexação de Editais
-* **RF-14 (Web Scraping Automatizado Multi-Fonte):** O sistema deve realizar a varredura automática (web scraping) em portais de fomento públicos e privados (ex: FINEP, FAPESC, FAPESP, FAPPR, FINEP Liferay/AJAX).
-* **RF-15 (Idempotência e Prevenção de Duplicidade):** O sistema deve validar e impedir a duplicidade de editais na base de dados através da geração de uma chave única unívoca `external_id` (MD5 composto de `Título + URL`).
-* **RF-16 (Extração Estruturada e Sanitização):** O sistema deve extrair, limpar e indexar os campos cruciais dos editais: título, órgão emissor, objetivo, pública-alvo, prazos, orçamento, condição de financiamento e modalidade de operação.
+* 🟢**RF-14 (Web Scraping Automatizado Multi-Fonte):** O sistema deve realizar a varredura automática (web scraping) em portais de fomento públicos e privados (ex: FINEP, FAPESC, FAPESP, FAPPR, FINEP Liferay/AJAX).
+* 🟢**RF-15 (Idempotência e Prevenção de Duplicidade):** O sistema deve validar e impedir a duplicidade de editais na base de dados através da geração de uma chave única unívoca `external_id` (MD5 composto de `Título + URL`).
+* 🟢**RF-16 (Extração Estruturada e Sanitização):** O sistema deve extrair, limpar e indexar os campos cruciais dos editais: título, órgão emissor, objetivo, pública-alvo, prazos, orçamento, condição de financiamento e modalidade de operação.
 
 ### Módulo 5: Planos, Assinaturas e Controle de Créditos
-* **RF-17 (Modelos de Assinatura):** O sistema deve fornecer 2 modelos de plano: com uso de IA embutida na plataforma ou uso com chave de API própria do usuário.
-* **RF-18 (Integração com Gateway Mercado Pago):** O sistema deve realizar a gestão de assinaturas recorrentes integrando-se à API do Mercado Pago.
-* **RF-19 (Liberação Instantânea via Webhook):** O sistema deve processar confirmações de pagamento via Webhook e liberar os créditos virtuais instantaneamente.
-* **RF-20 (Gestão de Créditos Virtuais):** O sistema deve manter um controle de créditos virtuais, descontando 1 unidade a cada minuta de proposta gerada pela IA da plataforma.
-* **RF-21 (BYOK - Bring Your Own Key):** O sistema deve permitir que o usuário cadastre e gerencie sua própria chave de API (Google Gemini / OpenAI) para evitar o consumo da quota de créditos internos.
+*🔴 **RF-17 (Modelos de Assinatura):** O sistema deve fornecer 2 modelos de plano: com uso de IA embutida na plataforma ou uso com chave de API própria do usuário.
+* 🟢**RF-17 (Modelos de Assinatura):** O sistema deve fornecer 2 modelos de plano: com uso de IA embutida na plataforma ou sem uso
+* 🟢**RF-17.1 (Minuta manual):** caso o user pega o plano sem IA
+
+* 🟢**RF-18 (Integração com Gateway Mercado Pago):** O sistema deve realizar a gestão de assinaturas recorrentes integrando-se à API do Mercado Pago.
+*🟢 **RF-19 (Liberação Instantânea via Webhook):** O sistema deve processar confirmações de pagamento via Webhook e liberar os créditos virtuais instantaneamente.
+* 🟢**RF-20 (Gestão de Créditos Virtuais):** O sistema deve manter um controle de créditos virtuais, descontando 1 unidade a cada minuta de proposta gerada pela IA da plataforma.
+* 🔴 **RF-21 (BYOK - Bring Your Own Key):** O sistema deve permitir que o usuário cadastre e gerencie sua própria chave de API (Google Gemini / OpenAI) para evitar o consumo da quota de créditos internos.
 
 ### Módulo 6: Gestão da Carteira de Clientes & Pipeline (Multi-Startup para Consultorias)
-* **RF-22 (Carteira de Startups Clientes):** O sistema deve permitir que a consultoria cadastre, edite e gerencie múltiplos perfis de startups sob uma única conta de consultoria (armazenando CNPJ, Porte, Faturamento, TRL, CNAEs e histórico de submissões).
-* **RF-23 (Matriz de Match e Elegibilidade Automatizada):** O sistema deve cruzar os critérios do edital (região, limite de faturamento, TRL mínimo, necessidade de ICT) com o perfil da startup cliente, gerando um **Score de Elegibilidade %** e apontando inconsistências.
-* **RF-24 (Pipeline Kanban de Oportunidades):** O sistema deve disponibilizar um painel Kanban para acompanhamento das etapas por cliente e por edital (*Mapeado -> Elegível -> Coleta de Documentos -> Elaboração -> Submetido -> Recurso -> Aprovado -> Prestação de Contas*).
+* 🟢**RF-22 (Carteira de Startups Clientes):** O sistema deve permitir que a consultoria cadastre, edite e gerencie múltiplos perfis de startups sob uma única conta de consultoria (armazenando CNPJ, Porte, Faturamento, TRL, CNAEs e histórico de submissões).
+* 🟢**RF-23 (Matriz de Match e Elegibilidade Automatizada):** O sistema deve cruzar os critérios do edital (região, limite de faturamento, TRL mínimo, necessidade de ICT) com o perfil da startup cliente, gerando um **Score de Elegibilidade %** e apontando inconsistências.
+* 🟢**RF-24 (Pipeline Kanban de Oportunidades):** O sistema deve disponibilizar um painel Kanban para acompanhamento das etapas por cliente e por edital (*Mapeado -> Elegível -> Coleta de Documentos -> Elaboração -> Submetido -> Recurso -> Aprovado -> Prestação de Contas*).
 
 ---
 
 ## 🟠 Nível 3: Inteligência Artificial, Prazos & Notificações (Dificuldade Alta)
 
 ### Módulo 7: Notificações, Engajamento e Match-Making
-* **RF-25 (Alerta de Match de Editais):** O sistema deve alertar o usuário automaticamente sobre novos editais abertos quando houver compatibilidade com o perfil e áreas de interesse cadastradas.
+* **RF-25 (Alerta de Match de Editais):** O sistema deve alertar o usuário automaticamente sobre novos editais abertos quando For encontradado edital compativel houver compatibilidade com o perfil e áreas de interesse cadastradas.
 
 ### Módulo 8: Gestão de Prazos, Recursos e Notificações Multicanal
 * **RF-26 (Calendário Unificado de Marcos e Entregáveis):** O sistema deve disponibilizar um calendário unificado com prazos de abertura, submissão, resultados preliminares, janela de recursos e prestação de contas de todos os clientes.
@@ -130,7 +133,7 @@ Este documento organiza **todos os Requisitos Funcionais (RF-01 a RF-46)** e **R
 ### Desempenho, Arquitetura e Escala
 * **RNF-01 (Performance Web):** A listagem de editais e carregamento de painéis deve ser concluída e renderizada no navegador em no máximo **5 segundos**.
 * **RNF-02 (Caching de Requisições de IA):** O sistema deve implementar rotinas de "Cache" nas chamadas às APIs de IA (Gemini/OpenAI), impedindo cobranças duplicadas de créditos e lentidão por reenvio acidental durante a geração.
-* **RNF-03 (Stack Tecnológica Core):** O backend deve ser desenvolvido em **PHP 8.2+** com o framework **Laravel 12** e renderização de visões em **Blade** ou API REST padronizada.
+* **RNF-03 (Stack Tecnológica Core):** O backend deve ser desenvolvido em **PHP 8.2+** com o framework **Laravel 11** e renderização de visões em **Blade** ou API REST padronizada.
 * **RNF-04 (Comunicação em Tempo Real via WebSockets):** A arquitetura deve integrar WebSockets (ex: **Laravel Reverb**) para suportar notificações instantâneas de status e atualizações de IA na interface.
 * **RNF-05 (Processamento Assíncrono de Pagamentos via Webhooks):** O processamento de pagamentos do Mercado Pago deve ocorrer de forma assíncrona via Webhooks com confirmação segura e idempotente.
 * **RNF-06 (Design Responsivo Mobile/Desktop):** O layout deve ser adaptável e funcional em telas de dispositivos móveis (smartphones, tablets) e desktops.
