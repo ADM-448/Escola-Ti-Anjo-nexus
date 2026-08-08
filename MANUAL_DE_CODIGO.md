@@ -23,7 +23,8 @@
 11. [WebSockets — Notificações em Tempo Real](#11-websockets--notificações-em-tempo-real)
 12. [Filas e Jobs Assíncronos (Queues)](#12-filas-e-jobs-assíncronos-queues)
 13. [Testes Automatizados (PHPUnit)](#13-testes-automatizados-phpunit)
-14. [Glossário Técnico para a Banca](#14-glossário-técnico-para-a-banca)
+14. [Web Scraping — Motor de Mineração de Editais](#14-web-scraping--motor-de-mineração-de-editais)
+15. [Glossário Técnico para a Banca](#15-glossário-técnico-para-a-banca)
 
 ---
 
@@ -1639,3 +1640,473 @@ Saiba explicar cada um destes termos com suas próprias palavras:
 | **Fetch API / `async/await`** | "`fetch()` é a forma moderna do JavaScript fazer requisições HTTP. `async/await` permite escrever código assíncrono de forma legível, sem callbacks aninhados." |
 | **`response()->json()`** | "Método do Laravel que serializa dados PHP para JSON e define o cabeçalho `Content-Type: application/json` automaticamente." |
 | **Status HTTP** | "Códigos numéricos que indicam o resultado: `200 OK`, `201 Created`, `401 Unauthorized`, `404 Not Found`, `422 Validation Error`, `500 Server Error`." |
+| **Roach PHP** | "Framework de Web Scraping para Laravel inspirado no Scrapy do Python. Organiza a varredura em Spiders (que coletam) e Processors (que tratam e salvam os dados)." |
+| **Generator / `yield`** | "Recurso do PHP para emitir valores um por vez sem carregar tudo na memória. O Spider emite um edital por `yield`; o Roach processa e chama o Processor antes de continuar." |
+| **Browsershot** | "Biblioteca PHP que controla um Chrome real (via Puppeteer/Node.js) para acessar sites que usam JavaScript pesado ou que exigem sessão autenticada — impossível de raspar com HTTP simples." |
+| **DomCrawler** | "Componente do Symfony que permite navegar no HTML de uma resposta usando seletores CSS (`.upk-title a`), similar ao jQuery. Usado nos Spiders de sites simples (FAPESC, FAPPR)." |
+| **Idempotência** | "Propriedade que garante que executar a mesma operação N vezes produz o mesmo resultado. No scraping, `updateOrCreate` garante que rodar o Spider 10 vezes não cria 10 duplicatas." |
+| **`external_id`** | "Chave única que identifica cada edital sem depender do auto-increment do banco. Pode ser o UUID do Liferay (FINEP) ou um `md5(título+link)` determinístico (FAPESC, FAPPR)." |
+
+---
+
+## 14. Web Scraping — Motor de Mineração de Editais
+
+> 💡 **O que é Web Scraping?** É o processo de acessar sites automaticamente, ler o HTML (ou a API interna) e extrair dados estruturados. No nosso projeto, o scraping é o motor que alimenta a base de editais sem intervenção manual.
+
+### 14.1 Arquitetura do Roach PHP
+
+O **Roach PHP** é o framework de scraping do projeto. Ele organiza o processo em 3 peças:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                MOTOR DE SCRAPING (Roach PHP)                  │
+│                                                              │
+│  1. SPIDER                  2. ITEM               3. PROCESSOR │
+│  (coleta os dados)  ──yield──> (pacote de dados) ──> (salva no BD) │
+│                                                              │
+│  app/Spiders/               $this->item([...])    Processors/  │
+│  FinepSpider.php                                  SalvarNoBanco│
+│  FapeScSpider.php                                 Processor.php│
+│  FapprSpider.php                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Fluxo completo:**
+1. O Artisan command dispara o Spider.
+2. O Spider acessa a URL de entrada (`$startUrls`).
+3. O método `parse()` extrai os dados e faz `yield $this->item([...])`.
+4. O `yield` entrega o item ao `SalvarNoBancoProcessor`.
+5. O Processor chama `Edital::updateOrCreate(...)` para salvar sem duplicar.
+6. O ciclo repete para cada edital encontrado.
+
+---
+
+### 14.2 Dois Padrões de Spider (você vai implementar novos)
+
+Existem dois tipos de portais que encontramos. Cada um tem uma abordagem diferente:
+
+| Tipo de Portal | Exemplo | Estratégia |
+| --- | --- | --- |
+| **HTML estático / WordPress** | FAPESC, FAPPR | `DomCrawler` com seletores CSS |
+| **SPA / Portal com API interna protegida** | FINEP (Liferay) | `Browsershot` + Chrome headless + `fetch()` no JS |
+
+---
+
+### 14.3 Padrão 1 — Spider HTML com DomCrawler (FAPESC)
+
+> 💡 **Use este padrão quando:** O site renderiza o conteúdo diretamente no HTML. Você consegue ver os editais ao fazer "Ver código-fonte" no navegador (Ctrl+U).
+
+**Arquivo:** `app/Spiders/FapeScSpider.php`
+
+```php
+<?php
+
+namespace App\Spiders;
+
+use RoachPHP\Http\Response;
+use RoachPHP\Spider\BasicSpider;
+use Symfony\Component\DomCrawler\Crawler; // Permite navegar no HTML com seletores CSS
+
+class FapeScSpider extends BasicSpider
+{
+    // 1. URL de entrada: o Roach começa por aqui
+    public array $startUrls = [
+        'https://fapesc.sc.gov.br/chamadas-abertas/'
+    ];
+
+    // 2. Concorrência 1 = uma requisição por vez (não sobrecarrega o servidor do portal)
+    public int $concurrency = 1;
+
+    // 3. Destino dos dados: após cada yield, os dados vão para este Processor
+    public array $itemProcessors = [
+        \App\Spiders\Processors\SalvarNoBancoProcessor::class,
+    ];
+
+    /**
+     * 4. Método principal — chamado automaticamente pelo Roach
+     *    com o HTML da $startUrl já baixado.
+     *    É um Generator: usa yield para emitir um edital por vez.
+     */
+    public function parse(Response $response): \Generator
+    {
+        // A FAPESC usa WordPress com o plugin "Ultimate Post Kit".
+        // Os editais ficam em cards com as classes .upk-list-wrap e .upk-item.
+        // filter() seleciona TODOS os nós que casam com o seletor CSS.
+        $cards = $response->filter('.upk-list-wrap .upk-item');
+
+        dump("FAPESC: Encontrados " . $cards->count() . " editais.");
+
+        // Itera sobre cada card de edital
+        foreach ($cards as $node) {
+            // $node é um DOMElement puro — precisamos criar um novo Crawler em cima dele
+            // para usar ->filter() restrito a este card (evita pegar dados de outros cards)
+            $card = new Crawler($node);
+
+            // Pula se o seletor não existir (proteção contra mudança de layout)
+            if (!$card->filter('.upk-title a')->count()) {
+                continue;
+            }
+
+            $titulo = $card->filter('.upk-title a')->text();  // texto visível do link
+            $link   = $card->filter('.upk-title a')->attr('href'); // URL do edital
+            $data   = $card->filter('.upk-meta')->count()
+                ? $card->filter('.upk-meta')->text()
+                : date('Y-m-d'); // fallback: hoje
+
+            // Limpa espaços extras, tabs e quebras de linha
+            $tituloLimpo = trim(preg_replace('/\s+/', ' ', $titulo));
+
+            // yield emite o item para o Pipeline e PAUSA aqui.
+            // O Processor salva no banco antes de o loop continuar.
+            yield $this->item([
+                // md5(título+link) = hash única e determinística.
+                // Mesma combinação título/link → mesmo hash → sem duplicatas.
+                'external_id'            => md5($tituloLimpo . $link),
+                'titulo'                 => $tituloLimpo,
+                'data_publicacao'        => trim($data),
+                'link'                   => $link,
+                'fonte'                  => 'FAPESC',
+                'objetivo'               => '', // preenchido pelo comando editais:detalhar
+                'condicao_financiamento' => '',
+                'operacao'               => '',
+                'publico'                => '',
+            ]);
+        }
+    }
+}
+```
+
+---
+
+### 14.4 Padrão 2 — Spider com Browsershot (FINEP/Liferay)
+
+> 💡 **Use este padrão quando:** O site é uma SPA (Single Page Application) — o HTML carregado não contém os editais. Eles aparecem somente após o JavaScript rodar. Portais que usam Liferay, React, Vue ou Angular precisam deste padrão.
+
+**Como funciona internamente:**
+1. O `Browsershot` abre o Chrome **de verdade** na URL do portal.
+2. O Chrome executa o JavaScript do site normalmente (cookies, sessão, tudo).
+3. Nosso script JS é **injetado dentro do Chrome** e faz `fetch()` para a API interna do portal — aproveitando a sessão já estabelecida.
+4. O resultado (JSON) é serializado e devolvido para o PHP.
+
+**Arquivo:** `app/Spiders/FinepSpider.php`
+
+```php
+<?php
+
+namespace App\Spiders;
+
+use App\Traits\LimpaTextoTrait;
+use Generator;
+use RoachPHP\Http\Response;
+use RoachPHP\Spider\BasicSpider;
+use Spatie\Browsershot\Browsershot; // Controla o Chrome via Puppeteer/Node.js
+
+class FinepSpider extends BasicSpider
+{
+    use LimpaTextoTrait; // Trait de limpeza de texto do projeto
+
+    public array $startUrls = ['https://www.finep.gov.br/oportunidades'];
+    public int   $concurrency = 1; // NUNCA aumentar: Chrome consome muita memória
+
+    public array $itemProcessors = [
+        \App\Spiders\Processors\SalvarNoBancoProcessor::class,
+    ];
+
+    public function parse(Response $response): Generator
+    {
+        $url = (string) $response->getUri(); // URL atual (usada pelo Browsershot para autenticar)
+
+        dump("FINEP: Abrindo Chrome e consultando API interna Liferay...");
+
+        try {
+            /*
+             * Script JavaScript executado DENTRO do Chrome.
+             * Usa a API REST interna do Liferay (rota relativa: /o/c/chamadapublicas).
+             * Retorna uma Promise porque fetch() é assíncrono.
+             */
+            $script = "
+                new Promise(async (resolve, reject) => {
+                    try {
+                        const PAGE_SIZE = 250;          // Máx de itens por página
+                        const API_BASE  = '/o/c/chamadapublicas';
+                        const SORT      = 'sort=dataDePublicacao:desc';
+
+                        // ── Passo 1: busca a 1ª página para saber o total ──
+                        const primeiraResp = await fetch(
+                            API_BASE + '?' + SORT + '&search=&page=1&pageSize=' + PAGE_SIZE,
+                            { headers: { 'Accept': 'application/json' } }
+                        );
+
+                        if (!primeiraResp.ok) { reject('HTTP ' + primeiraResp.status); return; }
+
+                        const primeiroJson = await primeiraResp.json();
+                        const lastPage     = primeiroJson.lastPage || 1;
+                        let   todosItens   = primeiroJson.items    || [];
+
+                        // ── Passo 2: busca as páginas restantes ──
+                        for (let pagina = 2; pagina <= lastPage; pagina++) {
+                            const resp = await fetch(
+                                API_BASE + '?' + SORT + '&search=&page=' + pagina + '&pageSize=' + PAGE_SIZE,
+                                { headers: { 'Accept': 'application/json' } }
+                            );
+                            if (!resp.ok) { continue; } // pula páginas com erro
+                            const dados = await resp.json();
+                            todosItens = todosItens.concat(dados.items || []);
+                        }
+
+                        resolve(JSON.stringify(todosItens)); // retorna JSON para o PHP
+
+                    } catch (err) { reject(err.toString()); }
+                });
+            ";
+
+            // Abre o Chrome, aguarda a rede ficar ociosa e executa o script JS.
+            // O resultado do resolve() volta como string PHP ($jsonString).
+            $jsonString = Browsershot::url($url)
+                ->setNodeBinary('C:/nodejs/node.exe')
+                ->setNpmBinary('C:/nodejs/npm.cmd')
+                ->setChromePath('C:/Program Files/Google/Chrome/Application/chrome.exe')
+                ->setOption('args', ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'])
+                ->setOption('protocolTimeout', 600000) // 10 minutos (API pode ser lenta)
+                ->timeout(600)                         // 10 minutos total
+                ->waitUntilNetworkIdle()               // espera a sessão carregar
+                ->evaluate($script);                   // injeta e executa o JS
+
+            $itens = json_decode($jsonString, true);
+
+            if (!is_array($itens) || empty($itens)) {
+                dump("AVISO: API retornou vazio. Resposta bruta:", $jsonString);
+                return;
+            }
+
+            dump("FINEP: " . count($itens) . " editais encontrados.");
+
+            foreach ($itens as $item) {
+                // O UUID nativo do Liferay é o external_id (mais confiável que md5)
+                $externalId = $item['externalReferenceCode'] ?? '';
+                $titulo     = $this->limpaTexto($item['titulo'] ?? 'Sem Título');
+
+                // Monta a URL do edital via âncora (FINEP usa SPA com hash routing)
+                $slug = \Illuminate\Support\Str::slug($item['titulo'] ?? '', '-');
+                $link = 'https://www.finep.gov.br/financiamento-via-credito#' . $slug;
+
+                // Público pode ser array de objetos [{key, name}]
+                $publicoAlvo = $item['publicoAlvo'] ?? [];
+                $publico = is_array($publicoAlvo) && !empty($publicoAlvo)
+                    ? $this->limpaTexto(implode(', ', array_filter(array_column($publicoAlvo, 'name'))))
+                    : 'Não especificado';
+
+                yield $this->item([
+                    'external_id'            => $externalId,
+                    'titulo'                 => $titulo,
+                    'data_publicacao'        => isset($item['dataDePublicacao'])
+                        ? date('Y-m-d', strtotime($item['dataDePublicacao']))
+                        : date('Y-m-d'),
+                    'link'                   => $link,
+                    'fonte'                  => 'FINEP',
+                    'objetivo'               => $this->limpaTexto($item['descricaoRawText'] ?? ''),
+                    'condicao_financiamento' => $this->limpaTexto($item['tipoCooperacao']['key'] ?? ''),
+                    'operacao'               => $this->limpaTexto($item['tipoDeOportunidade']['name'] ?? ''),
+                    'publico'                => $publico,
+                ]);
+            }
+
+        } catch (\Throwable $e) {
+            // \Throwable captura Exception E erros fatais do PHP
+            dump("ERRO FinepSpider: " . $e->getMessage());
+            dump($e->getTraceAsString());
+        }
+    }
+}
+```
+
+---
+
+### 14.5 O Processor — Onde os Dados São Salvos
+
+> 💡 **Por que separar o Processor do Spider?** Porque a mesma lógica de salvar no banco serve para TODOS os Spiders (FINEP, FAPESC, FAPPR). Em vez de repetir o código em cada Spider, todos apontam para o mesmo Processor.
+
+**Arquivo:** `app/Spiders/Processors/SalvarNoBancoProcessor.php`
+
+```php
+<?php
+
+namespace App\Spiders\Processors;
+
+use App\Models\Edital;
+use RoachPHP\ItemPipeline\ItemInterface;
+use RoachPHP\ItemPipeline\Processors\ItemProcessorInterface;
+
+class SalvarNoBancoProcessor implements ItemProcessorInterface
+{
+    // Obrigatório pela interface. Deixe vazio se não precisar de configurações.
+    public function configure(array $options): void {}
+
+    /**
+     * Chamado automaticamente pelo Roach para cada item emitido pelos Spiders.
+     * DEVE retornar o $item (mesmo sem modificar) para não quebrar o pipeline.
+     */
+    public function processItem(ItemInterface $item): ItemInterface
+    {
+        // Converte o objeto Item em array PHP simples
+        $dados = $item->all();
+
+        /*
+         * updateOrCreate — a peça-chave da IDEMPOTÊNCIA:
+         *
+         * 1º argumento: condição de BUSCA
+         *   → "Existe um edital com este external_id?"
+         *
+         * 2º argumento: dados a CRIAR (se não existe) ou ATUALIZAR (se existe)
+         *
+         * Resultado: rodar o Spider 10 vezes NÃO cria 10 cópias.
+         * Se o edital existe → atualiza. Se não → cria. Sempre 1 registro por edital.
+         */
+        Edital::updateOrCreate(
+            ['external_id' => $dados['external_id']],
+            [
+                'titulo'                 => $dados['titulo'],
+                'link'                   => $dados['link'],
+                'objetivo'               => $dados['objetivo']               ?? null,
+                'data_publicacao'        => $dados['data_publicacao']        ?? null,
+                'condicao_financiamento' => $dados['condicao_financiamento'] ?? null,
+                'operacao'               => $dados['operacao']               ?? null,
+                'publico'                => $dados['publico']                ?? null,
+                'fonte'                  => $dados['fonte'],
+            ]
+        );
+
+        return $item; // Obrigatório: retorna o item para que outros Processors possam processar
+    }
+}
+```
+
+---
+
+### 14.6 Como Adicionar um Novo Spider (Checklist)
+
+Quando precisar raspar um novo portal, siga estes passos:
+
+1. **Inspecione o portal** no navegador:
+   - Ctrl+U → Vê o edital no HTML? → Use **Padrão 1** (DomCrawler)
+   - Ctrl+U → Não vê nada / precisa de JS? → Use **Padrão 2** (Browsershot)
+
+2. **Crie o arquivo** `app/Spiders/NomeDoOrgaoSpider.php`
+
+3. **Defina os 3 campos obrigatórios:**
+   ```php
+   public array $startUrls   = ['https://url-do-portal.gov.br/editais'];
+   public int   $concurrency = 1;
+   public array $itemProcessors = [SalvarNoBancoProcessor::class];
+   ```
+
+4. **Implemente o `parse()`:** extraia título, link, data e `external_id`.
+
+5. **Registre o Spider no comando Artisan** (ver seção abaixo).
+
+6. **Teste isolado** antes de registrar:
+   ```bash
+   php artisan roach:run "App\Spiders\NomeDoOrgaoSpider"
+   ```
+
+---
+
+### 14.7 Comando Artisan de Varredura
+
+> **Arquivo:** `app/Console/Commands/VarrerEditaisCommand.php`
+
+```php
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+use RoachPHP\Roach;
+
+class VarrerEditaisCommand extends Command
+{
+    // Nome e assinatura do comando (roda com: php artisan editais:varrer)
+    protected $signature = 'editais:varrer
+                            {--spider= : Roda apenas um Spider específico (ex: finep, fapesc, fappr)}
+                            {--all    : Roda todos os Spiders em sequência}';
+
+    protected $description = 'Dispara os Spiders do Roach PHP para coletar editais dos portais configurados.';
+
+    // Mapa de spiders disponíveis: apelido => classe
+    protected array $spiders = [
+        'finep'  => \App\Spiders\FinepSpider::class,
+        'fapesc' => \App\Spiders\FapeScSpider::class,
+        'fappr'  => \App\Spiders\FapprSpider::class,
+        // ↑ Adicione novos spiders aqui
+    ];
+
+    public function handle(): void
+    {
+        if ($this->option('all')) {
+            $this->rodarTodos();
+            return;
+        }
+
+        $apelido = $this->option('spider');
+
+        if (!$apelido) {
+            // Menu interativo: lista os spiders disponíveis
+            $apelido = $this->choice('Qual Spider deseja rodar?', array_keys($this->spiders));
+        }
+
+        if (!isset($this->spiders[$apelido])) {
+            $this->error("Spider '{$apelido}' não encontrado.");
+            return;
+        }
+
+        $this->rodarSpider($apelido, $this->spiders[$apelido]);
+    }
+
+    protected function rodarTodos(): void
+    {
+        $this->info('Iniciando varredura completa em ' . count($this->spiders) . ' portais...');
+        foreach ($this->spiders as $apelido => $classe) {
+            $this->rodarSpider($apelido, $classe);
+        }
+        $this->info('✅ Varredura completa finalizada!');
+    }
+
+    protected function rodarSpider(string $apelido, string $classe): void
+    {
+        $this->info("🕷️  Iniciando Spider: {$apelido} ({$classe})");
+        $inicio = now();
+
+        Roach::startSpider($classe); // dispara o Spider de forma síncrona
+
+        $tempo = now()->diffInSeconds($inicio);
+        $this->info("✅ {$apelido} finalizado em {$tempo}s");
+    }
+}
+```
+
+**Registrar o comando em `app/Console/Kernel.php` (ou Bootstrap/Console):**
+```php
+protected $commands = [
+    \App\Console\Commands\VarrerEditaisCommand::class,
+];
+```
+
+**Formas de executar:**
+```bash
+# Menu interativo
+php artisan editais:varrer
+
+# Spider específico direto
+php artisan editais:varrer --spider=finep
+php artisan editais:varrer --spider=fapesc
+
+# Todos em sequência
+php artisan editais:varrer --all
+
+# Agendar varredura diária via Scheduler (em app/Console/Kernel.php):
+$schedule->command('editais:varrer --all')->dailyAt('03:00');
+```
+
+---
+
+## 15. Glossário Técnico para a Banca
