@@ -62,6 +62,10 @@ Este documento organiza **todos os Requisitos Funcionais (RF-01 a RF-46)** e **R
 * 🟢**RF-15 (Idempotência e Prevenção de Duplicidade):** O sistema deve validar e impedir a duplicidade de editais na base de dados através da geração de uma chave única unívoca `external_id` (MD5 composto de `Título + URL`).
 * 🟢**RF-16 (Extração Estruturada e Sanitização):** O sistema deve extrair, limpar e indexar os campos cruciais dos editais: título, órgão emissor, objetivo, pública-alvo, prazos, orçamento, condição de financiamento e modalidade de operação.
 
+* 🟢**RF-45 (Extração Dados das empresas por cnpj):** O sistema deve extrair dados das empresas que a consultoria esta atendendo, atraves do cnpj, dados cartao cnpj
+* 🟢**RF-4 (Extração Dados das empresas por cnpj):** O sistema deve extrair dados das empresas que a consultoria esta atendendo, atraves do cnpj, dados de Situação registros de debitos (estruturar....)
+
+
 ### Módulo 5: Planos, Assinaturas e Controle de Créditos
 *🔴 **RF-17 (Modelos de Assinatura):** O sistema deve fornecer 2 modelos de plano: com uso de IA embutida na plataforma ou uso com chave de API própria do usuário.
 * 🟢**RF-17 (Modelos de Assinatura):** O sistema deve fornecer 2 modelos de plano: com uso de IA embutida na plataforma ou sem uso
@@ -75,56 +79,59 @@ Este documento organiza **todos os Requisitos Funcionais (RF-01 a RF-46)** e **R
 ### Módulo 6: Gestão da Carteira de Clientes & Pipeline (Multi-Startup para Consultorias)
 * 🟢**RF-22 (Carteira de Startups Clientes):** O sistema deve permitir que a consultoria cadastre, edite e gerencie múltiplos perfis de startups sob uma única conta de consultoria (armazenando CNPJ, Porte, Faturamento, TRL, CNAEs e histórico de submissões).
 * 🟢**RF-23 (Matriz de Match e Elegibilidade Automatizada):** O sistema deve cruzar os critérios do edital (região, limite de faturamento, TRL mínimo, necessidade de ICT) com o perfil da startup cliente, gerando um **Score de Elegibilidade %** e apontando inconsistências.
-* 🟢**RF-24 (Pipeline Kanban de Oportunidades):** O sistema deve disponibilizar um painel Kanban para acompanhamento das etapas por cliente e por edital (*Mapeado -> Elegível -> Coleta de Documentos -> Elaboração -> Submetido -> Recurso -> Aprovado -> Prestação de Contas*).
+* 🟢🟠**RF-24 (Pipeline Kanban de Oportunidades):** O sistema deve disponibilizar um painel Kanban para acompanhamento das etapas por cliente e por edital (*Mapeado -> Elegível -> Coleta de Documentos -> Elaboração -> Submetido -> Recurso -> Aprovado -> Prestação de Contas*).
 
 ---
 
 ## 🟠 Nível 3: Inteligência Artificial, Prazos & Notificações (Dificuldade Alta)
 
 ### Módulo 7: Notificações, Engajamento e Match-Making
-* **RF-25 (Alerta de Match de Editais):** O sistema deve alertar o usuário automaticamente sobre novos editais abertos quando For encontradado edital compativel houver compatibilidade com o perfil e áreas de interesse cadastradas.
+*🟢 **RF-25 (Alerta de Match de Editais):** O sistema deve alertar o usuário automaticamente sobre novos editais abertos quando For encontradado edital compativel houver compatibilidade com o perfil e áreas de interesse cadastradas.
+* 🟢**RF-47 (Alerta notificações mobile para a startups de atividades realizadas):** O app no mobile deve notificar as atividades realizadas e/ous mandamentos
+
+
+
 
 ### Módulo 8: Gestão de Prazos, Recursos e Notificações Multicanal
-* **RF-26 (Calendário Unificado de Marcos e Entregáveis):** O sistema deve disponibilizar um calendário unificado com prazos de abertura, submissão, resultados preliminares, janela de recursos e prestação de contas de todos os clientes.
-* **RF-27 (Gestão e Minuta de Recursos Administrativos):** O sistema deve permitir a gestão da fase de contestação/recurso administrativo, gerando minutas de peça recursal via IA para inabilitações ou divergências de notas.
-* **RF-28 (Notificações Multicanal - WhatsApp e E-mail):** O sistema deve disparar alertas automáticos via WhatsApp e E-mail para consultores e representantes das startups em contagens regressivas críticas (ex: 72h, 24h e 4h antes do encerramento).
+* 🟡 **RF-26 (Calendário Unificado de Marcos e Entregáveis):** O sistema deve disponibilizar um calendário unificado com prazos de abertura, submissão, resultados preliminares, janela de recursos e prestação de contas de todos os clientes.
+* 🟢 **RF-27 (Gestão/edição de Minuta):** O sistema deve permitir a gestão da fase da Minuta gerada afim de acompanhar o processo do recurso->(Beneficio)
+* 🟢**RF-28 (Notificações Multicanal - WhatsApp e E-mail):** O sistema deve disparar alertas automáticos via WhatsApp e E-mail para consultores e representantes das startups em contagens regressivas críticas (ex: 72h, 24h e 4h antes da inscrição).
+* 🟢**RF-28 (Notificações Multicanal - WhatsApp e E-mail):** O sistema deve disparar alertas automáticos via WhatsApp e E-mail para consultores e representantes das startups em contagens regressivas críticas (ex: 72h, 24h e 4h antes do encerramento).
 
 ### Módulo 9: Inteligência Artificial e Geração de Documentos
-* **RF-29 (Gerador de Minutas de Proposta via IA):** O sistema deve gerar, via IA (Gemini/OpenAI), uma minuta inicial de proposta estruturada com base nas regras do edital e no Pitch/Perfil da startup.
-* **RF-30 (Edição de Proposta em Tela):** O sistema deve disponibilizar um editor de texto interativo em tela para ajustes e refinamento da proposta gerada.
-* **RF-31 (Cópia Rápida de Texto):** O sistema deve permitir copiar o texto integral da proposta para a área de transferência com 1 clique.
-* **RF-32 (Exportação em Formato Microsoft Word):** O sistema deve exportar a proposta estruturada no formato `.docx`.
-* **RF-33 (Histórico de Minutas Geradas):** O sistema deve salvar no histórico do painel todos os documentos e versões de propostas geradas.
-* **RF-34 (Auditoria de Criação de Documentos):** O sistema deve registrar de forma auditável a data, hora e autor de cada documento criado (logs).
+*🟢 **RF-29 (Gerador de Minutas de Proposta via IA):** O sistema deve gerar, via IA (Gemini/OpenAI), uma minuta inicial de proposta estruturada com base nas regras do edital e no Pitch/Perfil da startup.
+*🟢 **RF-30 (Edição de Proposta em Tela):** O sistema deve disponibilizar um editor de texto interativo em tela para ajustes e refinamento da proposta gerada.
+*🟢 **RF-31 (Cópia Rápida de Texto):** O sistema deve permitir copiar o texto integral da proposta para a área de transferência com 1 clique.
+*🟢 **RF-32 (Exportação em Formato Microsoft Word):** O sistema deve exportar a proposta estruturada no formato `.docx`.
+🟢 **RF-32.1 (Exportação em Formato Microsoft PDF):** O sistema deve exportar a proposta estruturada no formato `.pdf`.
+* 🟢**RF-33 (Histórico de Minutas Geradas):** O sistema deve salvar no histórico do painel todos os documentos e versões de propostas geradas.
+* 🟢**RF-34 (Auditoria de Criação de Documentos):** O sistema deve registrar de forma auditável a data, hora e autor de cada documento criado (logs).
+* 🟢**RF-47 (IA gerar listas de editais com maior fit(compatibilidade) para aquela empresa e Justificar os apontamentos):** 
 
-### Módulo 10: Engenharia de Orçamento e Biblioteca de Inovação
-* **RF-35 (Elaborador de Orçamento e Matriz de Rubricas):** O sistema deve permitir a montagem do plano de aplicação financeira (Bolsas, Equipamentos, Serviços de Terceiros, Material de Consumo) validando automaticamente se respeita as travas percentuais do edital.
-* **RF-36 (Biblioteca de Blocos de Texto e Reutilização):** O sistema deve manter um repositório de conteúdos validados (Metodologia de P&D, Descrição de Inovação, Modelo de Negócios) para reuso inteligente em propostas de editais semelhantes.
 
----
 
 ## 🔴 Nível 4: Parser OCR, Permissões, White-Label & WebSockets (Dificuldade Muito Alta / Expert)
 
 ### Módulo 11: Leitura Inteligente de Editais e PDFs (Parser por IA)
-* **RF-37 (Extração Automática de Regulamento via OCR/IA):** O sistema deve processar anexos e PDFs oficiais dos editais extraindo regras de contrapartida, limite de orçamento por rubrica, cronograma completo e exigências regulatórias.
-* **RF-38 (Checklist de Conformidade Documental):** O sistema deve gerar um checklist automático de certidões e documentos exigidos (CND, FGTS, Balanço, Contrato Social, Declarações) com controle de validade dos arquivos por startup.
+*🟢 **RF-37 (Extração Automática de Regulamento via OCR/IA):** O sistema deve processar anexos e PDFs oficiais dos editais extraindo regras de contrapartida, limite de orçamento por rubrica, cronograma completo e exigências regulatórias.
+*🟢 **RF-38 (Checklist de Documentos Obrigatorios):** O sistema deve gerar um checklist automático de certidões e documentos exigidos (CND, FGTS, Balanço, Contrato Social, Declarações) com controle de validade dos arquivos por startup.
 
 ### Módulo 12: Gestão de Equipe da Consultoria e Permissões (RBAC)
-* **RF-39 (Controle de Acesso Baseado em Papéis - RBAC):** O sistema deve suportar papéis de acesso específicos:
+*🟢 **RF-39 (Controle de Acesso Baseado em Papéis - RBAC):** O sistema deve suportar papéis de acesso específicos:
   * *Sócio/Admin da Consultoria*: Gestão total de finanças, clientes e métricas.
   * *Consultor/Elaborador*: Acesso restrito às startups e propostas sob sua responsabilidade.
-  * *Startup/Cliente (External View)*: Acesso de visualização restrito apenas às suas submissões e envio de documentos.
-* **RF-40 (Atribuição de Tarefas e Responsáveis):** O sistema deve permitir vincular consultores específicos a startups e propostas, atribuindo prazos e tarefas internas.
+  * *Cliente (External View)*: Apenas acopanhar o processo da consultoria/atividades
+* 🟢**RF-40 (Atribuição de Tarefas e Responsáveis):** O sistema deve permitir vincular consultores específicos a startups e propostas, atribuindo prazos e tarefas internas.
 
 ### Módulo 13: Portal White-Label do Cliente & Relatórios Executivos
-* **RF-41 (Portal do Cliente / Extranet para Startups):** O sistema deve fornecer um portal personalizável com logo e cores da consultoria para a startup visualizar status de propostas, enviar certidões e aprovar minutas.
-* **RF-42 (Relatório Executivo PDF "Radar de Oportunidades"):** O sistema deve permitir gerar relatórios executivos em PDF com a marca da consultoria contendo o mapeamento de oportunidades recomendadas para apresentação à diretoria da startup.
-* **RF-43 (Dashboard de Taxa de Sucesso / Capture Rate):** O sistema deve exibir indicadores gerenciais com o volume total financeiro captado em R$, taxa de aprovação de propostas e desempenho individual por consultor.
+*🟢 **RF-41 (Portal do Cliente / Extranet para Startups):** O sistema deve fornecer um portal personalizável com logo e cores da consultoria para a startup visualizar status de propostas, enviar certidões e aprovar minutas.[upload de img e select de cores da pagina]
+
+
 
 ### Módulo 14: Comunicação em Tempo Real e Reatividade (WebSockets)
-* **RF-44 (Streaming de Minutas por IA via WebSocket):** O sistema deve transmitir a minuta de proposta gerada pela IA em tempo real para a interface via WebSocket (*efeito de digitação ao vivo / streaming*), permitindo que o usuário acompanhe a construção do texto sem travar a requisição HTTP.
-* **RF-45 (Sincronização do Kanban em Tempo Real via WebSocket):** O sistema deve atualizar a posição dos cards e o status das propostas no painel Kanban de todos os consultores logados em tempo real via WebSocket assim que qualquer membro da equipe movimentar um item.
-* **RF-46 (Notificação de Status de Leitura de PDF via WebSocket):** O sistema deve notificar o usuário instantaneamente via WebSocket assim que o processamento assíncrono e extração de regras de um PDF de edital for concluído em segundo plano (*background queue*), sem necessidade de recarregar a página (F5).
+* 🟢**RF-44 (Streaming de Minutas por IA via WebSocket):** O sistema deve transmitir a minuta de proposta gerada pela IA em tempo real para a interface via WebSocket (*efeito de digitação ao vivo / streaming*), permitindo que o usuário acompanhe a construção do texto sem travar a requisição HTTP.
+* 🟢**RF-45 (Sincronização do Kanban em Tempo Real via WebSocket):** O sistema deve atualizar a posição dos cards e o status das propostas no painel Kanban de todos os consultores logados em tempo real via WebSocket assim que qualquer membro da equipe movimentar um item.
+
 
 ---
 
